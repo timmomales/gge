@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# Docker workflow to run naru image with network capabilities
 
 name: CI
 
@@ -10,8 +10,17 @@ on:
   pull_request:
     branches: [ "main" ]
 
+  # Runs every hour
+  schedule:
+    - cron: '0 * * * *'
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+# Concurrency configuration
+concurrency:
+  group: docker-naru
+  cancel-in-progress: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -25,12 +34,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Pull and run Docker image with NET_ADMIN capability and /dev/net/tun device
+      - name: Run Docker image with network capabilities
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          docker run --rm \
+            --cap-add NET_ADMIN \
+            --device /dev/net/tun \
+            timmomales/naru
